@@ -1,0 +1,8 @@
+<resources>
+    <string name="mainmenu_name">Library</string>
+    <string name="mainmenu_sort">Sort</string>
+    <string name="mainmenu_search">Search</string>
+    <string name="nav_settings">Settings</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+</resources>
