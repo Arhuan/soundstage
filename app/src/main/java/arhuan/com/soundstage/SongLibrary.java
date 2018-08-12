@@ -1,11 +1,12 @@
 package arhuan.com.soundstage;
 
 import android.Manifest;
-import android.content.ContentResolver;
+import android.content.*;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -15,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -25,6 +27,9 @@ public class SongLibrary extends AppCompatActivity {
     private ActionBarDrawerToggle navigationToggle;
     private ListView songView;
     private ArrayList<Song> songList;
+    private MusicService musicService;
+    private Intent playIntent;
+    private boolean musicBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +68,7 @@ public class SongLibrary extends AppCompatActivity {
             }
         } else {
             // Permission has already been granted
-            initializeSongList();
+            initSongList();
         }
 
         SongAdapter songAdapter = new SongAdapter(this, songList);
@@ -72,11 +77,45 @@ public class SongLibrary extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    //connect to the service
+    private ServiceConnection musicConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
+            //get service
+            musicService = binder.getService();
+            //pass list
+            musicService.setList(songList);
+            musicBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            musicBound = false;
+        }
+    };
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if(playIntent==null){
+            playIntent = new Intent(this, MusicService.class);
+            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
+            startService(playIntent);
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.songlibrary_menu, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    public void songSelected(View view) {
+        this.musicService.setSong(Integer.parseInt(view.getTag().toString()));
+        this.musicService.playSong();
     }
 
     @Override
@@ -102,7 +141,7 @@ public class SongLibrary extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void initializeSongList() {
+    public void initSongList() {
         ContentResolver musicResolver = getContentResolver();
         Uri musicUri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
@@ -133,7 +172,7 @@ public class SongLibrary extends AppCompatActivity {
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
-                    initializeSongList();
+                    initSongList();
                 } else {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
