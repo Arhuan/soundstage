@@ -107,6 +107,13 @@ public class SongLibrary extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        stopService(this.playIntent);
+        this.musicService = null;
+        super.onDestroy();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.songlibrary_menu, menu);
