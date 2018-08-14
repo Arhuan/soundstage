@@ -27,7 +27,7 @@ public class SongLibraryTest {
 
     @Test
     public void testSortSongListAlphabetically() {
-        this.testSongLibrary.sortSongListAlphabetically();
+        this.testSongLibrary.sortSongsAlphabetically();
 
         ArrayList<Song> sortedSongList = new ArrayList<>();
 
@@ -42,7 +42,7 @@ public class SongLibraryTest {
 
     @Test
     public void testSortSongListArtist() {
-        this.testSongLibrary.sortSongListArtist();
+        this.testSongLibrary.sortSongsArtist();
 
         ArrayList<Song> sortedSongList = new ArrayList<>();
 

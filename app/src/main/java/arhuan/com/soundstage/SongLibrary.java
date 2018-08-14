@@ -192,11 +192,62 @@ public class SongLibrary extends AppCompatActivity {
         }
     }
 
-    public void sortSongListAlphabetically() {
+    public void sortSongsAlphabetically() {
         // sorts the song list alphabetically by title
+        this.songList = sortSongsAlphabetically(this.songList);
     }
 
-    public void sortSongListArtist() {
+    private ArrayList<Song> sortSongsAlphabetically(ArrayList<Song> songs) {
+        // sorts the song list alphabetically by title
+        if (songs.size() <= 1) {
+            return songs;
+        }
+
+        ArrayList<Song> list1 = new ArrayList<>();
+        ArrayList<Song> list2 = new ArrayList<>();
+        for (int i = 0; i < songs.size(); i++) {
+            if (i < songs.size() / 2) {
+                list1.add(songs.get(i));
+            } else {
+                list2.add(songs.get(i));
+            }
+        }
+
+        list1 = sortSongsAlphabetically(list1);
+        list2 = sortSongsAlphabetically(list2);
+
+        return merge(list1, list2);
+    }
+
+    private ArrayList<Song> merge(ArrayList<Song> list1, ArrayList<Song> list2) {
+        ArrayList<Song> result = new ArrayList<>();
+        int idx1 = 0;
+        int idx2 = 0;
+
+        while (!list1.isEmpty() && !list2.isEmpty() && idx1 < list1.size() && idx2 < list2.size()) {
+            if (list1.get(idx1).getTitle().compareToIgnoreCase(list2.get(idx2).getTitle()) < 0) {
+                result.add(list1.get(idx1));
+                idx1++;
+            } else {
+                result.add(list2.get(idx2));
+                idx2++;
+            }
+        }
+
+        while (idx1 < list1.size()) {
+            result.add(list1.get(idx1));
+            idx1++;
+        }
+
+        while (idx2 < list2.size()) {
+            result.add(list2.get(idx2));
+            idx2++;
+        }
+
+        return result;
+    }
+
+    public void sortSongsArtist() {
         // sorts the song list alphabetically by artist name
     }
 

@@ -28,4 +28,27 @@ public class Song {
     public long getLength() {
         return this.length;
     }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (o == this) return true;
+        if (!(o instanceof Song)) {
+            return false;
+        }
+
+        Song song = (Song) o;
+
+        return song.getId() == this.id;
+    }
+
+    @Override
+    public int hashCode() {
+        int res = 7;
+        res = 31 * res + (int) this.id;
+        res = 31 * res + this.title.hashCode();
+        res = 31 * res + this.artist.hashCode();
+        res = 31 * res + (int) this.getLength();
+        return res;
+    }
 }
