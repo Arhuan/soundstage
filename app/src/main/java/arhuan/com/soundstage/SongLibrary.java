@@ -71,8 +71,8 @@ public class SongLibrary extends AppCompatActivity {
             initSongList();
         }
 
-        SongAdapter songAdapter = new SongAdapter(this, songList);
-        songView.setAdapter(songAdapter);
+        SongAdapter songAdapter = new SongAdapter(this, this.songList);
+        this.songView.setAdapter(songAdapter);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
@@ -140,8 +140,18 @@ public class SongLibrary extends AppCompatActivity {
                 // change action bar to a search bar
                 return true;
 
-            case R.id.songLibrarySort:
-                // user selected to see sort options
+            case R.id.byTitle:
+                // user selected to sort by title
+                sortSongsAlphabetically();
+                this.songView.setAdapter(new SongAdapter(this, this.songList));
+                this.musicService.setList(this.songList);
+                return true;
+
+            case R.id.byArtist:
+                // user selected to sort by artist
+                sortSongsAlphabetically();
+                this.songView.setAdapter(new SongAdapter(this, this.songList));
+                this.musicService.setList(this.songList);
                 return true;
         }
 
@@ -248,7 +258,7 @@ public class SongLibrary extends AppCompatActivity {
     }
 
     public void sortSongsArtist() {
-        // sorts the song list alphabetically by artist name
+        // sorts the song list alphabetically by artist name, if artist name is the same -> sort by title of song
     }
 
     public void setSongList(ArrayList<Song> newList) {
