@@ -149,7 +149,7 @@ public class SongLibrary extends AppCompatActivity {
 
             case R.id.byArtist:
                 // user selected to sort by artist
-                sortSongsAlphabetically();
+                sortSongsArtist();
                 this.songView.setAdapter(new SongAdapter(this, this.songList));
                 this.musicService.setList(this.songList);
                 return true;
@@ -226,10 +226,10 @@ public class SongLibrary extends AppCompatActivity {
         list1 = sortSongsAlphabetically(list1);
         list2 = sortSongsAlphabetically(list2);
 
-        return merge(list1, list2);
+        return sortSongsAlphabeticallyMerge(list1, list2);
     }
 
-    private ArrayList<Song> merge(ArrayList<Song> list1, ArrayList<Song> list2) {
+    private ArrayList<Song> sortSongsAlphabeticallyMerge(ArrayList<Song> list1, ArrayList<Song> list2) {
         ArrayList<Song> result = new ArrayList<>();
         int idx1 = 0;
         int idx2 = 0;
@@ -259,6 +259,64 @@ public class SongLibrary extends AppCompatActivity {
 
     public void sortSongsArtist() {
         // sorts the song list alphabetically by artist name, if artist name is the same -> sort by title of song
+        this.songList = sortSongsArtist(this.songList);
+    }
+
+    private ArrayList<Song> sortSongsArtist(ArrayList<Song> songs) {
+        if (songs.size() <= 1) {
+            return songs;
+        }
+
+        ArrayList<Song> list1 = new ArrayList<>();
+        ArrayList<Song> list2 = new ArrayList<>();
+        for (int i = 0; i < songs.size(); i++) {
+            if (i < songs.size() / 2) {
+                list1.add(songs.get(i));
+            } else {
+                list2.add(songs.get(i));
+            }
+        }
+
+        list1 = sortSongsArtist(list1);
+        list2 = sortSongsArtist(list2);
+
+        return sortSongsArtistMerge(list1, list2);
+    }
+
+    private ArrayList<Song> sortSongsArtistMerge(ArrayList<Song> list1, ArrayList<Song> list2) {
+        ArrayList<Song> result = new ArrayList<>();
+        int idx1 = 0;
+        int idx2 = 0;
+
+        while (!list1.isEmpty() && !list2.isEmpty() && idx1 < list1.size() && idx2 < list2.size()) {
+            if (list1.get(idx1).getArtist().compareToIgnoreCase(list2.get(idx2).getArtist()) == 0) {
+                if (list1.get(idx1).getTitle().compareToIgnoreCase(list2.get(idx2).getTitle()) < 0) {
+                    result.add(list1.get(idx1));
+                    idx1++;
+                } else {
+                    result.add(list2.get(idx2));
+                    idx2++;
+                }
+            } else if (list1.get(idx1).getArtist().compareToIgnoreCase(list2.get(idx2).getArtist()) < 0) {
+                result.add(list1.get(idx1));
+                idx1++;
+            } else {
+                result.add(list2.get(idx2));
+                idx2++;
+            }
+        }
+
+        while (idx1 < list1.size()) {
+            result.add(list1.get(idx1));
+            idx1++;
+        }
+
+        while (idx2 < list2.size()) {
+            result.add(list2.get(idx2));
+            idx2++;
+        }
+
+        return result;
     }
 
     public void setSongList(ArrayList<Song> newList) {
