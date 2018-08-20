@@ -5,4 +5,6 @@
     <string name="nav_settings">Settings</string>
     <string name="open">Open</string>
     <string name="close">Close</string>
+    <string name="sort1">By Title</string>
+    <string name="sort2">By Artist</string>
 </resources>
