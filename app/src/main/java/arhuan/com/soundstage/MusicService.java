@@ -1,5 +1,7 @@
 package arhuan.com.soundstage;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.Intent;
@@ -20,6 +22,8 @@ public class MusicService extends Service implements
     private ArrayList<Song> songs;
     private int songPosition;
     private final IBinder musicBinder = new MusicBinder();
+    private String songTitle = "";
+    private static final int NOTIFY_ID = 1;
 
     public void onCreate() {
         super.onCreate();
@@ -51,23 +55,49 @@ public class MusicService extends Service implements
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
-
+        if (this.player.getCurrentPosition() > 0) {
+            mediaPlayer.reset();
+            playNext();
+        }
     }
 
     @Override
     public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+        mediaPlayer.reset();
         return false;
     }
 
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
         mediaPlayer.start();
+        Intent notifIntent = new Intent(this, SongLibrary.class);
+        notifIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendInt = PendingIntent.getActivity(this, 0,
+                notifIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Notification.Builder builder = new Notification.Builder(this);
+
+        builder.setContentIntent(pendInt)
+                .setSmallIcon(R.drawable.ic_action_play_arrow)
+                .setTicker(this.songTitle)
+                .setOngoing(true)
+                .setContentTitle("Playing")
+                .setContentText(this.songTitle);
+        Notification not = builder.build();
+
+        startForeground(NOTIFY_ID, not);
+    }
+
+    @Override
+    public void onDestroy() {
+        stopForeground(true);
     }
 
     public void playSong() {
         this.player.reset();
         Song playSong = this.songs.get(this.songPosition);
         long currSong = playSong.getId();
+        this.songTitle = playSong.getTitle();
         Uri trackUri = ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, currSong);
         try{
             this.player.setDataSource(getApplicationContext(), trackUri);
@@ -76,6 +106,44 @@ public class MusicService extends Service implements
             Log.e("MUSIC SERVICE", "Error setting data source", e);
         }
         this.player.prepareAsync();
+    }
+
+    public void playPrev() {
+        this.songPosition--;
+        if (this.songPosition < 0)
+            this.songPosition = this.songs.size() - 1;
+        playSong();
+    }
+
+    public void playNext() {
+        this.songPosition++;
+        if (this.songPosition >= this.songs.size())
+            this.songPosition = 0;
+        playSong();
+    }
+
+    public int getPosition(){
+        return this.player.getCurrentPosition();
+    }
+
+    public int getDuration(){
+        return this.player.getDuration();
+    }
+
+    public boolean isPlaying(){
+        return this.player.isPlaying();
+    }
+
+    public void pausePlayer(){
+        this.player.pause();
+    }
+
+    public void seek(int posn){
+        this.player.seekTo(posn);
+    }
+
+    public void go(){
+        this.player.start();
     }
 
     public void setSong(int songIndex) {
