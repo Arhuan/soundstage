@@ -1,7 +1,5 @@
 package arhuan.com.soundstage;
 
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentUris;
 import android.content.Intent;
@@ -22,8 +20,6 @@ public class MusicService extends Service implements
     private ArrayList<Song> songs;
     private int songPosition;
     private final IBinder musicBinder = new MusicBinder();
-    private String songTitle = "";
-    private static final int NOTIFY_ID = 1;
 
     public void onCreate() {
         super.onCreate();
@@ -35,9 +31,12 @@ public class MusicService extends Service implements
     public void initMusicPlayer() {
         this.player.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
         this.player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        this.player.setOnPreparedListener(this);
         this.player.setOnCompletionListener(this);
         this.player.setOnErrorListener(this);
+    }
+
+    public void setOnPreparedListener(MediaPlayer.OnPreparedListener listener) {
+        this.player.setOnPreparedListener(listener);
     }
 
     @Nullable
@@ -70,22 +69,6 @@ public class MusicService extends Service implements
     @Override
     public void onPrepared(MediaPlayer mediaPlayer) {
         mediaPlayer.start();
-        Intent notifIntent = new Intent(this, SongLibrary.class);
-        notifIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendInt = PendingIntent.getActivity(this, 0,
-                notifIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Notification.Builder builder = new Notification.Builder(this);
-
-        builder.setContentIntent(pendInt)
-                .setSmallIcon(R.drawable.ic_action_play_arrow)
-                .setTicker(this.songTitle)
-                .setOngoing(true)
-                .setContentTitle("Playing")
-                .setContentText(this.songTitle);
-        Notification not = builder.build();
-
-        startForeground(NOTIFY_ID, not);
     }
 
     @Override
@@ -97,9 +80,8 @@ public class MusicService extends Service implements
         this.player.reset();
         Song playSong = this.songs.get(this.songPosition);
         long currSong = playSong.getId();
-        this.songTitle = playSong.getTitle();
         Uri trackUri = ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, currSong);
-        try{
+        try {
             this.player.setDataSource(getApplicationContext(), trackUri);
         }
         catch(Exception e){

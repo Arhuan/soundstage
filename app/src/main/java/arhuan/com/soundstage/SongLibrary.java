@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.*;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -91,6 +92,13 @@ public class SongLibrary extends AppCompatActivity implements MediaController.Me
             MusicService.MusicBinder binder = (MusicService.MusicBinder) service;
             //get service
             musicService = binder.getService();
+            musicService.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mediaPlayer) {
+                    musicService.go();
+                    musicController.show(0);
+                }
+            });
             //pass list
             musicService.setList(songList);
             musicBound = true;
@@ -105,7 +113,7 @@ public class SongLibrary extends AppCompatActivity implements MediaController.Me
     @Override
     protected void onStart() {
         super.onStart();
-        if(playIntent == null){
+        if(playIntent == null) {
             playIntent = new Intent(this, MusicService.class);
             bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
             startService(playIntent);
@@ -113,9 +121,9 @@ public class SongLibrary extends AppCompatActivity implements MediaController.Me
     }
 
     @Override
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
-        this.paused = true;
+        this.playbackPaused = true;
     }
 
     @Override
@@ -126,11 +134,10 @@ public class SongLibrary extends AppCompatActivity implements MediaController.Me
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         if(this.paused) {
             setMusicController();
-            this.musicController.show();
             this.paused = false;
         }
     }
@@ -151,9 +158,9 @@ public class SongLibrary extends AppCompatActivity implements MediaController.Me
     public void songSelected(View view) {
         this.musicService.setSong(Integer.parseInt(view.getTag().toString()));
         this.musicService.playSong();
-        if(this.playbackPaused){
+        if(this.playbackPaused) {
             setMusicController();
-            this.playbackPaused=false;
+            this.playbackPaused = false;
         }
         this.musicController.show(0);
     }
@@ -410,12 +417,12 @@ public class SongLibrary extends AppCompatActivity implements MediaController.Me
 
     @Override
     public boolean canSeekBackward() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean canSeekForward() {
-        return true;
+        return false;
     }
 
     @Override
@@ -427,7 +434,7 @@ public class SongLibrary extends AppCompatActivity implements MediaController.Me
         this.musicService.playNext();
         if(this.playbackPaused) {
             setMusicController();
-            this.playbackPaused=false;
+            this.playbackPaused = false;
         }
         this.musicController.show(0);
     }
@@ -436,14 +443,14 @@ public class SongLibrary extends AppCompatActivity implements MediaController.Me
         this.musicService.playPrev();
         if(this.playbackPaused) {
             setMusicController();
-            this.playbackPaused=false;
+            this.playbackPaused = false;
         }
         this.musicController.show(0);
     }
 
     public void setMusicController() {
         // set up the music controller
-        this.musicController = new MusicController(this);
+        this.musicController = new MusicController(this, false);
         this.musicController.setPrevNextListeners(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
